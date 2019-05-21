@@ -27,6 +27,7 @@ Module attributes:
 import os
 import operator
 
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont
 from PyQt5.QtWebEngineWidgets import (QWebEngineSettings, QWebEngineProfile,
                                       QWebEnginePage)
@@ -292,10 +293,15 @@ def _init_profiles():
     default_profile.setter.init_profile()
     default_profile.setter.set_persistent_cookie_policy()
 
-    private_profile = QWebEngineProfile()
-    private_profile.setter = ProfileSetter(private_profile)
-    assert private_profile.isOffTheRecord()
-    private_profile.setter.init_profile()
+    args = QApplication.instance().arguments()
+    if '--single-process' in args:
+        log.config.info("Disabling private mode due to single process mode")
+        private_profile = default_profile
+    else:
+        private_profile = QWebEngineProfile()
+        private_profile.setter = ProfileSetter(private_profile)
+        assert private_profile.isOffTheRecord()
+        private_profile.setter.init_profile()
 
 
 def init(args):
